@@ -1,4 +1,4 @@
-import  sha1  from 'sha1';
+import sha1 from 'sha1';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 
@@ -13,7 +13,7 @@ export default class UsersController {
     }
 
     const users = dbClient.db.collection('users');
-    const user = await users.findOne({email});
+    const user = await users.findOne({ email });
     if (user) {
       res.status(401).json({ error: 'Already exist' });
       return;
@@ -35,7 +35,7 @@ export default class UsersController {
     if (user) {
       res.json({ email: user.email, id: user._id });
     } else {
-      res.status(401).json({error: "Unauthorised"})
+      res.status(401).json({ error: 'Unauthorised' });
     }
   }
 }
