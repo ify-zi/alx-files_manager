@@ -6,7 +6,7 @@ import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
 
 const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
-const filePath = path.join(folderPath, uuidv4());
+const filePath = path.join(folderPath, uuidv4().toString());
 
 export default class FilesController {
   static async postUpload(req, res) {
@@ -76,19 +76,17 @@ export default class FilesController {
       return;
     }
 
-    const upFile = {
+    const newFile = await files.insertOne({
       userId: ObjectId(userId),
       name,
       type,
       isPublic,
       parentId: parentId ? ObjectId(parentId) : 0,
       localPath: filePath,
-    };
-    const saveFile = await files.insertOne({ upFile });
-    const file = await files.findOne({ _id: saveFile.insertedId });
-
+     });
+    const file = await files.findOne({ _id: newFile.insertedId });
     res.status(201).json({
-      id: saveFile.insertedId,
+      id: newFile.insertedId,
       userId: file.userId,
       name: file.name,
       type: file.type,
