@@ -19,5 +19,7 @@ route.get('/disconnect', AuthController.getDisconnect);
 
 /* file routes */
 route.post('/files', FilesController.postUpload);
+route.get('/files/:id', FilesController.getShow);
+route.get('/files', FilesController.getIndex);
 
 export default route;

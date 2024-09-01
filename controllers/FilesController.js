@@ -17,7 +17,7 @@ export default class FilesController {
     const users = dbClient.db.collection('users');
     const user = await users.findOne({ _id: ObjectId(userId) });
     if (!user) {
-      res.status(401).send({"error": "Unauthorised"});
+      res.status(401).json({ error: 'Unauthorized' });
       return;
     }
     const files = dbClient.db.collection('files');
@@ -70,7 +70,8 @@ export default class FilesController {
         name: file.name,
         type: file.type,
         isPublic: file.isPublic,
-        parentId: file.parentId,});
+        parentId: file.parentId,
+      });
       return;
     }
 
@@ -95,7 +96,7 @@ export default class FilesController {
       isPublic,
       parentId: parentId ? ObjectId(parentId) : 0,
       localPath: filePath,
-     });
+    });
     const file = await files.findOne({ _id: newFile.insertedId });
     res.status(201).json({
       id: newFile.insertedId,
@@ -105,6 +106,61 @@ export default class FilesController {
       isPublic: file.isPublic,
       parentId: file.parentId,
     });
-    return;
+  }
+
+  static async getShow(req, res) {
+    const xToken = req.headers['x-token'];
+    const key = `auth_${xToken}`;
+    const userId = await redisClient.get(key);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const fileId = req.params.id;
+    const files = dbClient.db.collection('files');
+    const file = await files.findOne({ userId: ObjectId(userId), _id: ObjectId(fileId) });
+
+    if (!file) {
+      return res.status(404).json({ error: 'Not Found' });
+    }
+    return res.status(200).send({
+      id: file._id,
+      userId: file.userId,
+      name: file.name,
+      type: file.type,
+      isPublic: file.isPublic,
+      parentId: file.parentId,
+    });
+  }
+
+  static async getIndex(req, res) {
+    const xToken = req.headers['x-token'];
+    const key = `auth_${xToken}`;
+    const userId = await redisClient.get(key);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const parentId = req.query ? req.query.parentId : 0;
+    const page = req.query ? req.query.page : 0;
+
+    const filesCollection = dbClient.db.collection('files');
+    const pipeline = [
+      {
+        $match: {
+          userId: ObjectId(userId),
+          parentId: parentId === '0' ? 0 : ObjectId(parentId),
+        },
+      },
+      {
+        $skip: parseInt(page, 10) * 20,
+      },
+      {
+        $limit: 20,
+      },
+    ];
+
+    const files = await filesCollection.aggregate(pipeline).toArray();
+
+    return res.status(200).send({ files });
   }
 }
