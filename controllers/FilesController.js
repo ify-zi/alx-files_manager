@@ -11,9 +11,15 @@ const filePath = path.join(folderPath, uuidv4().toString());
 export default class FilesController {
   static async postUpload(req, res) {
     /* get the user from the database using the X-token */
-    const xtoken = req.headers['X-token'];
+    const xtoken = req.headers['x-token'];
     const key = `auth_${xtoken}`;
     const userId = await redisClient.get(key);
+    const users = dbClient.db.collection('users');
+    const user = await users.findOne({ _id: ObjectId(userId) });
+    if (!user) {
+      res.status(401).send({"error": "Unauthorised"});
+      return;
+    }
     const files = dbClient.db.collection('files');
 
     /* handling inputs  and validations */
