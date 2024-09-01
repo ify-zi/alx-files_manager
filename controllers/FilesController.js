@@ -105,5 +105,6 @@ export default class FilesController {
       isPublic: file.isPublic,
       parentId: file.parentId,
     });
+    return;
   }
 }

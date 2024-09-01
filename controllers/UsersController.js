@@ -26,7 +26,7 @@ export default class UsersController {
       .insertOne({ email, password: sha1(password) });
     const userId = newUser.insertedId;
     if(newUser){
-    res.status(201).send({ id: userId, email });
+    res.status(201).json({ id: userId, email });
     return;
     }
   }

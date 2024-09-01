@@ -17,11 +17,13 @@ export default class AuthController {
 
     if (!user || (user.password !== sha1(password))) {
       res.status(401).json({ error: 'Unauthorised' });
+      return;
     } else {
       const token = uuidv4();
       const key = `auth_${token}`;
       await redisClient.set(key, user._id.toString(), 86400);
       res.status(200).json({ token });
+      return;
     }
   }
 
@@ -31,9 +33,11 @@ export default class AuthController {
     const userId = await redisClient.get(key);
     if (!userId) {
       res.status(401).json({ error: 'Unauthorized' });
+      return;
     } else {
       await redisClient.del(key);
-      res.status(204).send();
+      res.status(204);
+      return;
     }
   }
 }
