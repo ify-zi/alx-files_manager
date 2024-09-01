@@ -49,16 +49,22 @@ export default class FilesController {
 
     /* adding file to database */
     if (type === 'folder') {
-      const newFile = {
+      const newFile = await files.insertOne({
         userId: ObjectId(userId),
         name,
         type,
         data,
         parentId: parentId ? ObjectId(parentId) : 0,
         isPublic,
-      };
-      const newDBFile = await files.insertOne({ newFile });
-      res.status(201).json({ newDBFile });
+      });
+      const file = await files.findOne({ _id: newFile.insertedId });
+      res.status(201).send({
+        id: newFile.insertedId,
+        userId: file.userId,
+        name: file.name,
+        type: file.type,
+        isPublic: file.isPublic,
+        parentId: file.parentId,});
       return;
     }
 

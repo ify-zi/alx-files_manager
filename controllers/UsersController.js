@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb';
 import sha1 from 'sha1';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
@@ -19,21 +20,22 @@ export default class UsersController {
       return;
     }
 
-    const insertInfo = await users
+    const newUser = await users
       .insertOne({ email, password: sha1(password) });
-    const userId = insertInfo.insertedId.toString();
-
-    res.status(201).json({ email, id: userId });
+    const userId = newUser.insertedId;
+    if(newUser){
+    res.status(201).send({ id: userId, email });
+    }
   }
 
   static async getMe(req, res) {
-    const xtoken = req.headers['X-token'];
+    const xtoken = req.headers['x-token'];
     const key = `auth_${xtoken}`;
     const userId = await redisClient.get(key);
     const users = dbClient.db.collection('users');
-    const user = await users.findOne({ userId });
+    const user = await users.findOne({ _id: ObjectId(userId) });
     if (user) {
-      res.json({ email: user.email, id: user._id });
+      res.json({ id: user._id, email: user.email});
     } else {
       res.status(401).json({ error: 'Unauthorised' });
     }

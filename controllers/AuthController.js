@@ -6,7 +6,6 @@ import redisClient from '../utils/redis';
 export default class AuthController {
   static async getConnect(req, res) {
     const authHeader = req.headers.authorization;
-    console.log(authHeader);
     const authToken = authHeader.split(' ');
     const decodedToken = Buffer.from(authToken[1], 'base64').toString('utf-8');
     const detail = decodedToken.split(':');
@@ -21,20 +20,20 @@ export default class AuthController {
     } else {
       const token = uuidv4();
       const key = `auth_${token}`;
-      await redisClient.set(key, user.id, 86400);
+      await redisClient.set(key, user._id.toString(), 86400);
       res.status(200).json({ token });
     }
   }
 
   static async getDisconnect(req, res) {
-    const token = req.headers['X-token'];
+    const token = req.headers['x-token'];
     const key = `auth_${token}`;
     const userId = await redisClient.get(key);
     if (!userId) {
       res.status(401).json({ error: 'Unauthorized' });
     } else {
       await redisClient.del(key);
-      res.status(204);
+      res.status(204).send();
     }
   }
 }
