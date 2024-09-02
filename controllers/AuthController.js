@@ -16,12 +16,12 @@ export default class AuthController {
     const user = await users.findOne({ email });
 
     if (!user || (user.password !== sha1(password))) {
-      res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: 'Unauthorized' });
     } else {
       const token = uuidv4();
       const key = `auth_${token}`;
       await redisClient.set(key, user._id.toString(), 86400);
-      res.status(200).json({ token });
+      return res.status(200).json({ token });
     }
   }
 
@@ -30,10 +30,10 @@ export default class AuthController {
     const key = `auth_${token}`;
     const userId = await redisClient.get(key);
     if (!userId) {
-      res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: 'Unauthorized' });
     } else {
       await redisClient.del(key);
-      res.status(204);
+      return res.status(204).json();
     }
   }
 }

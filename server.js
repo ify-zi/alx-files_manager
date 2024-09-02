@@ -9,7 +9,7 @@ app.use(express.json());
 app.use('/', route);
 
 app.listen(PORT, () => {
-  console.log('Server is running on http://127.0.0.1:5000');
+  console.log('Server running on port 5000');
 });
 
 export default app;

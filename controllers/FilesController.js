@@ -17,8 +17,7 @@ export default class FilesController {
     const users = dbClient.db.collection('users');
     const user = await users.findOne({ _id: ObjectId(userId) });
     if (!user) {
-      res.status(401).json({ error: 'Unauthorized' });
-      return;
+      return res.status(401).json({ error: 'Unauthorized' });
     }
     const files = dbClient.db.collection('files');
 
@@ -29,27 +28,22 @@ export default class FilesController {
     const isPublic = (req.body) && (req.body.isPublic) ? req.body.isPublic : false;
     const data = (req.body) ? req.body.data : '';
     if (!name) {
-      res.status(400).json({ error: 'Missing name' });
-      return;
+      return res.status(400).json({ error: 'Missing name' });
     }
     if (!type || (type !== 'file' && type !== 'folder' && type !== 'image')) {
-      res.status(400).json({ error: 'Missing type' });
-      return;
+      return res.status(400).json({ error: 'Missing type' });
     }
     if (!data && type !== 'folder') {
-      res.status(400).json({ error: 'Missing data' });
-      return;
+      return res.status(400).json({ error: 'Missing data' });
     }
 
     if (parentId) {
       const file = await files.findOne({ parentId });
       if (!file) {
-        res.status(400).json({ error: 'Parent not found' });
-        return;
+        return res.status(400).json({ error: 'Parent not found' });
       }
       if (file.type !== 'folder') {
-        res.status(400).json({ error: 'Parent is not a folder' });
-        return;
+        return res.status(400).json({ error: 'Parent is not a folder' });
       }
     }
 
@@ -64,7 +58,7 @@ export default class FilesController {
         isPublic,
       });
       const file = await files.findOne({ _id: newFile.insertedId });
-      res.status(201).send({
+      return res.status(201).json({
         id: newFile.insertedId,
         userId: file.userId,
         name: file.name,
@@ -72,7 +66,6 @@ export default class FilesController {
         isPublic: file.isPublic,
         parentId: file.parentId,
       });
-      return;
     }
 
     try {
@@ -85,8 +78,7 @@ export default class FilesController {
         encoding: 'base64',
       });
     } catch (error) {
-      res.status(400).json({ error: 'Cannot write to file' });
-      return;
+      return res.status(400).json({ error: 'Cannot write to file' });
     }
 
     const newFile = await files.insertOne({
@@ -98,7 +90,7 @@ export default class FilesController {
       localPath: filePath,
     });
     const file = await files.findOne({ _id: newFile.insertedId });
-    res.status(201).json({
+    return res.status(201).json({
       id: newFile.insertedId,
       userId: file.userId,
       name: file.name,
@@ -122,7 +114,7 @@ export default class FilesController {
     if (!file) {
       return res.status(404).json({ error: 'Not Found' });
     }
-    return res.status(200).send({
+    return res.status(200).json({
       id: file._id,
       userId: file.userId,
       name: file.name,
@@ -161,6 +153,6 @@ export default class FilesController {
 
     const files = await filesCollection.aggregate(pipeline).toArray();
 
-    return res.status(200).send({ files });
+    return res.status(200).json({ files });
   }
 }

@@ -26,7 +26,7 @@ export default class UsersController {
       .insertOne({ email, password: sha1(password) });
     const userId = newUser.insertedId;
     if (newUser) {
-      res.status(201).json({ id: userId, email });
+      return res.status(201).send({ id: userId, email });
     }
   }
 
@@ -37,9 +37,9 @@ export default class UsersController {
     const users = dbClient.db.collection('users');
     const user = await users.findOne({ _id: ObjectId(userId) });
     if (user) {
-      res.json({ id: user._id, email: user.email });
+      return res.json({ id: user._id, email: user.email });
     } else {
-      res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: 'Unauthorized' });
     }
   }
 }
